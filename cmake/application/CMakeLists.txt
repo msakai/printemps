@@ -22,8 +22,8 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
         -Wextra
         -Wno-error=missing-field-initializers
         -pthread
-        -march=native
-        -mtune=native
+        -march=nehalem
+        -mtune=broadwell
     )
 else() # Debug
     add_compile_options(
