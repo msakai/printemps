@@ -10,6 +10,8 @@ if(OpenMP_FOUND)
 endif()
 
 option(LINK_STATIC OFF)
+set(MARCH "native" CACHE STRING "Value for -march (default: native)")
+set(MTUNE "native" CACHE STRING "Value for -mtune (default: native)")
 
 # ##############################################################################
 # switch compiler options according to CMAKE_BUILD_TYPE
@@ -29,7 +31,7 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
         add_compile_options(-mcpu=native)
     else()
         # for x86_64
-        add_compile_options(-march=native -mtune=native)
+        add_compile_options(-march=${MARCH} -mtune=${MTUNE})
     endif()
 else() # Debug
     add_compile_options(
