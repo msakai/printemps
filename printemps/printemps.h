@@ -14,6 +14,7 @@
 #include "helper/helper.h"
 #include "mps/mps.h"
 #include "opb/opb.h"
+#include "wcnf/wcnf.h"
 #include "option/option.h"
 #include "model_component/model_component.h"
 #include "neighborhood/neighborhood.h"
@@ -23,6 +24,7 @@
 #include "model/model.h"
 #include "solver/solver.h"
 #include "standalone/standalone.h"
+#include "standalone/maxsat_standalone.h"
 
 #endif
 

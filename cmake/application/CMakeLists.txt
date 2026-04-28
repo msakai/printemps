@@ -47,6 +47,7 @@ endif()
 add_executable(printemps ${TOP_DIR}/application/standalone/main.cpp)
 add_executable(mps_solver ${TOP_DIR}/application/standalone/main.cpp)
 add_executable(opb_solver ${TOP_DIR}/application/standalone/main.cpp)
+add_executable(printemps-maxsat ${TOP_DIR}/application/maxsat/main.cpp)
 
 target_include_directories(
     printemps
@@ -66,10 +67,17 @@ target_include_directories(
     PRIVATE ${TOP_DIR}/external/include/
 )
 
+target_include_directories(
+    printemps-maxsat
+    PRIVATE ${TOP_DIR}/printemps/
+    PRIVATE ${TOP_DIR}/external/include/
+)
+
 if(LINK_STATIC)
     target_link_options(printemps PRIVATE -static-libgcc -static-libstdc++ -static)
     target_link_options(mps_solver PRIVATE -static-libgcc -static-libstdc++ -static)
     target_link_options(opb_solver PRIVATE -static-libgcc -static-libstdc++ -static)
+    target_link_options(printemps-maxsat PRIVATE -static-libgcc -static-libstdc++ -static)
 endif()
 
 # ##############################################################################
