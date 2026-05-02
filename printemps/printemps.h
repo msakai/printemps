@@ -24,7 +24,6 @@
 #include "model/model.h"
 #include "solver/solver.h"
 #include "standalone/standalone.h"
-#include "standalone/maxsat_standalone.h"
 
 #endif
 

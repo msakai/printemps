@@ -3,87 +3,75 @@
 // Released under the MIT license
 // https://opensource.org/licenses/mit-license.php
 /*****************************************************************************/
-#ifndef PRINTEMPS_STANDALONE_MAXSAT_STANDALONE_H__
-#define PRINTEMPS_STANDALONE_MAXSAT_STANDALONE_H__
+#ifndef PRINTEMPS_EXTRA_MAXSAT_EVALUATION_MAXSAT_EVALUATION_SOLVER_H__
+#define PRINTEMPS_EXTRA_MAXSAT_EVALUATION_MAXSAT_EVALUATION_SOLVER_H__
 
-namespace printemps::standalone {
+#include "maxsat_evaluation_solver_argparser.h"
+
+namespace printemps::extra::maxsat_evaluation {
+inline bool interrupted = false;
+inline void interrupt_handler([[maybe_unused]] int signum) {
+    interrupted = true;
+}
+
 /*****************************************************************************/
-class MaxSATStandalone {
+class MaxSATEvaluationSolver {
    private:
-    wcnf::WCNF          m_wcnf;
-    model::IPModel      m_model;
-    option::Option      m_option;
-    utility::TimeKeeper m_time_keeper;
-
-    std::string m_instance_file_name;
-    double      m_timeout_seconds;
+    MaxSATEvaluationSolverArgparser m_argparser;
+    wcnf::WCNF                      m_wcnf;
+    model::IPModel                  m_model;
+    option::Option                  m_option;
+    utility::TimeKeeper             m_time_keeper;
 
     /**
      * Best feasible objective value emitted so far. Initialized to +infinity
      * so that the first feasible incumbent always passes the improvement
-     * check. Mutated only from the solver thread (callback runs serially).
+     * check. The callback runs serially from the solver thread, so no mutex
+     * is required.
      */
-    double      m_best_objective;
-    bool        m_have_emitted_solution;
-    std::string m_last_v_line;
+    double m_best_objective;
+    bool   m_have_emitted_solution;
 
    public:
     /*************************************************************************/
-    MaxSATStandalone(void) {
+    MaxSATEvaluationSolver(void) {
         this->initialize();
     }
 
     /*************************************************************************/
+    MaxSATEvaluationSolver(const int argc, const char *argv[]) {
+        this->initialize();
+        this->setup(argc, argv);
+    }
+
+    /*************************************************************************/
     inline void initialize(void) {
+        m_argparser.initialize();
         m_wcnf.initialize();
         m_model.initialize();
         m_option.initialize();
         m_time_keeper.initialize();
 
-        m_instance_file_name.clear();
-        m_timeout_seconds       = 0.0;
         m_best_objective        = std::numeric_limits<double>::infinity();
         m_have_emitted_solution = false;
-        m_last_v_line.clear();
-    }
-
-    /*************************************************************************/
-    inline static void print_usage(void) {
-        std::cout << std::endl;
-        std::cout << "PRINTEMPS " + constant::VERSION + " (" +
-                         constant::PROJECT_URL + ") -- MaxSAT Anytime mode"
-                  << std::endl;
-        std::cout << std::endl;
-        std::cout << "Usage: ./printemps-maxsat <input.wcnf> <timeout_seconds>"
-                  << std::endl;
     }
 
     /*************************************************************************/
     inline void setup(const int argc, const char *argv[]) {
         if (argc < 3) {
-            print_usage();
+            m_argparser.print_usage();
             std::exit(1);
         }
 
         m_time_keeper.set_start_time();
 
-        m_instance_file_name = argv[1];
-        try {
-            m_timeout_seconds = std::stod(argv[2]);
-        } catch (const std::exception &) {
-            std::cerr << "c invalid timeout argument: " << argv[2] << std::endl;
-            std::exit(1);
-        }
-        if (m_timeout_seconds <= 0.0) {
-            std::cerr << "c timeout must be positive: " << argv[2] << std::endl;
-            std::exit(1);
-        }
+        m_argparser.parse(argc, argv);
 
         /**
          * Force PRINTEMPS to be silent so that only c/o/v/s lines appear on
          * stdout. Force single-threaded execution per MSE rules.
          */
-        m_option.output.verbose                            = option::verbose::Off;
+        m_option.output.verbose                             = option::verbose::Off;
         m_option.parallel.number_of_threads_move_evaluation = 1;
         m_option.parallel.number_of_threads_move_update     = 1;
 #ifdef _OPENMP
@@ -91,14 +79,14 @@ class MaxSATStandalone {
 #endif
 
         /**
-         * Reserve a small wall-clock margin so that we have time to flush the
-         * final s/o/v lines before SIGTERM->SIGKILL. The margin matters less
-         * for the long timeouts but is critical at 60 s.
+         * Reserve a small wall-clock margin so that we have time to flush
+         * the final s/o/v lines before SIGTERM->SIGKILL. The margin matters
+         * less for the long timeouts but is critical at 60 s.
          */
         const double SAFETY_MARGIN_SECONDS = 1.0;
         m_option.general.time_max =
-            std::max(m_timeout_seconds - SAFETY_MARGIN_SECONDS,
-                     m_timeout_seconds * 0.95);
+            std::max(m_argparser.timeout_seconds - SAFETY_MARGIN_SECONDS,
+                     m_argparser.timeout_seconds * 0.95);
 
         /**
          * Improve PRINTEMPS' behaviour on Boolean disjunctive constraints.
@@ -106,21 +94,18 @@ class MaxSATStandalone {
         m_option.neighborhood.is_enabled_two_flip_move = true;
 
         /**
-         * Make stdout line-buffered (effectively unitbuf for cout) so that
-         * each o/v line reaches the parent before SIGKILL strikes.
+         * Make stdout effectively unitbuf so that each o/v line reaches the
+         * parent before SIGKILL strikes.
          */
         std::cout << std::unitbuf;
 
         /**
          * Parse the WCNF instance and import it into the IPModel.
          */
-        m_wcnf.read_wcnf(m_instance_file_name);
-        m_model.set_name(utility::base_name(m_instance_file_name));
+        m_wcnf.read_wcnf(m_argparser.wcnf_file_name);
+        m_model.set_name(utility::base_name(m_argparser.wcnf_file_name));
         m_model.import_wcnf(m_wcnf);
 
-        /**
-         * Install signal handlers reusing the standalone-mode interrupt flag.
-         */
         signal(SIGINT, interrupt_handler);
         signal(SIGTERM, interrupt_handler);
 #ifndef _WIN32
@@ -169,7 +154,6 @@ class MaxSATStandalone {
         std::cout << "v " << v_line << "\n";
         std::cout.flush();
 
-        m_last_v_line          = std::move(v_line);
         m_have_emitted_solution = true;
     }
 
@@ -189,8 +173,7 @@ class MaxSATStandalone {
          */
         const auto &SOLUTION = RESULT.solution;
         if (SOLUTION.is_feasible()) {
-            const double FINAL_COST =
-                static_cast<double>(SOLUTION.objective());
+            const double FINAL_COST = static_cast<double>(SOLUTION.objective());
             if (FINAL_COST + constant::EPSILON < m_best_objective) {
                 m_best_objective = FINAL_COST;
                 std::string v_line;
@@ -201,12 +184,11 @@ class MaxSATStandalone {
                 for (auto i = 0; i < N; i++) {
                     v_line.push_back(VALUES[i] != 0 ? '1' : '0');
                 }
-                const long long COST = static_cast<long long>(
-                    std::llround(FINAL_COST));
+                const long long COST =
+                    static_cast<long long>(std::llround(FINAL_COST));
                 std::cout << "o " << COST << "\n";
                 std::cout << "v " << v_line << "\n";
                 std::cout.flush();
-                m_last_v_line          = std::move(v_line);
                 m_have_emitted_solution = true;
             }
         }
@@ -215,6 +197,7 @@ class MaxSATStandalone {
          * MSE 2026 status / exit code mapping. PRINTEMPS does not prove
          * optimality nor unsatisfiability of hard clauses, so we emit
          * SATISFIABLE on any feasible incumbent and UNKNOWN otherwise.
+         * UNSATISFIABLE is handled by the main() exception handler.
          */
         if (m_have_emitted_solution) {
             std::cout << "s SATISFIABLE" << std::endl;
@@ -224,8 +207,13 @@ class MaxSATStandalone {
             return 0;
         }
     }
+
+    /*************************************************************************/
+    inline int run(void) {
+        return this->solve();
+    }
 };
-}  // namespace printemps::standalone
+}  // namespace printemps::extra::maxsat_evaluation
 #endif
 /*****************************************************************************/
 // END

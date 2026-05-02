@@ -1,4 +1,4 @@
-# printemps-maxsat: solver description (outline)
+# maxsat_evaluation_solver: solver description (outline)
 
 This is a placeholder outline for the 1-2 page IEEE-format PDF required by
 the MaxSAT Evaluation 2026 anytime-track submission. Replace this file with
@@ -6,9 +6,9 @@ the actual `printemps-maxsat-2026.pdf` before zipping the submission.
 
 ## Suggested section structure
 
-1. **Overview** — printemps-maxsat is a thin MaxSAT-track wrapper around
-   PRINTEMPS, an open-source C++17 metaheuristic solver for general integer
-   linear programming developed by Yuji Koguma. PRINTEMPS combines a
+1. **Overview** — `maxsat_evaluation_solver` is a thin MaxSAT-track wrapper
+   around PRINTEMPS, an open-source C++17 metaheuristic solver for general
+   integer linear programming developed by Yuji Koguma. PRINTEMPS combines a
    tabu-search outer loop with PDLP / Lagrange-dual / local-search
    warm-start phases.
 
@@ -31,10 +31,16 @@ the actual `printemps-maxsat-2026.pdf` before zipping the submission.
    `option.parallel.number_of_threads_*=1`. Two-flip move is enabled by
    default.
 
-5. **Signal handling** — `SIGINT` / `SIGTERM` / `SIGXCPU` set the same
-   `interrupted` flag the existing `printemps` standalone uses, polled by
-   the tabu controller; final `o`/`v`/`s` lines are flushed on return.
+5. **Signal handling** — `SIGINT` / `SIGTERM` / `SIGXCPU` set a namespace-
+   local `interrupted` flag (mirroring the `pb_competition_2025_solver`
+   pattern), polled by the tabu controller; final `o`/`v`/`s` lines are
+   flushed on return.
 
-6. **Acknowledgements / citation** — cite the IEEE Access paper
+6. **Failure modes** — `main()` catches
+   `printemps::model::InfeasibleError` from the preprocess phase and
+   reports `s UNSATISFIABLE` (exit 20); any other unexpected exception is
+   reported as `s UNKNOWN`.
+
+7. **Acknowledgements / citation** — cite the IEEE Access paper
    (Koguma 2024, doi 10.1109/ACCESS.2024.3361323) and the PRINTEMPS
    project page.

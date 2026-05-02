@@ -60,6 +60,21 @@ if(LINK_STATIC)
     target_link_options(pb_competition_2025_solver PRIVATE -static-libgcc -static-libstdc++ -static)
 endif()
 
+# maxsat_evaluation_solver for the MaxSAT Evaluation anytime tracks
+add_executable(
+    maxsat_evaluation_solver ${TOP_DIR}/extra/maxsat_evaluation/main.cpp
+)
+
+target_include_directories(
+    maxsat_evaluation_solver
+    PRIVATE ${TOP_DIR}/printemps/
+    PRIVATE ${TOP_DIR}/external/include/
+)
+
+if(LINK_STATIC)
+    target_link_options(maxsat_evaluation_solver PRIVATE -static-libgcc -static-libstdc++ -static)
+endif()
+
 # ##############################################################################
 # END
 # ##############################################################################

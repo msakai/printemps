@@ -5,12 +5,14 @@
 /*****************************************************************************/
 #include <gtest/gtest.h>
 #include <printemps.h>
+#include "extra/maxsat_evaluation/maxsat_evaluation_solver.h"
 
 namespace {
 using namespace printemps;
+namespace mse = printemps::extra::maxsat_evaluation;
 
 /*****************************************************************************/
-class TestMaxSATStandalone : public ::testing::Test {
+class TestMaxSATEvaluationSolver : public ::testing::Test {
    protected:
     virtual void SetUp(void) {
         /// nothing to do
@@ -20,14 +22,15 @@ class TestMaxSATStandalone : public ::testing::Test {
     }
 
     /**
-     * Drive MaxSATStandalone end-to-end against an on-disk WCNF instance,
-     * capturing stdout. The argv layout matches the MSE 2026 anytime track:
-     * argv[0] = solver, argv[1] = wcnf path, argv[2] = timeout in seconds.
+     * Drive MaxSATEvaluationSolver end-to-end against an on-disk WCNF
+     * instance, capturing stdout. The argv layout matches the MSE 2026
+     * anytime track: argv[0] = solver, argv[1] = wcnf path,
+     * argv[2] = timeout in seconds.
      */
     int run_and_capture(const std::string &a_INSTANCE_PATH,
                         const std::string &a_TIMEOUT,
                         std::string       *a_out_stdout) {
-        const char        *FAKE_ARGV0 = "printemps-maxsat";
+        const char *FAKE_ARGV0 = "maxsat_evaluation_solver";
         std::array<const char *, 3> argv = {FAKE_ARGV0,
                                             a_INSTANCE_PATH.c_str(),
                                             a_TIMEOUT.c_str()};
@@ -36,14 +39,14 @@ class TestMaxSATStandalone : public ::testing::Test {
         std::streambuf *const ORIGINAL_BUF = std::cout.rdbuf(captured.rdbuf());
 
         /**
-         * The driver reads the global standalone interrupt flag; reset it so
-         * a previous test does not leak state.
+         * The driver reads the namespace-local interrupt flag; reset it so a
+         * previous test does not leak state.
          */
-        standalone::interrupted = false;
+        mse::interrupted = false;
 
         int exit_code = 0;
         try {
-            standalone::MaxSATStandalone app;
+            mse::MaxSATEvaluationSolver app;
             app.setup(static_cast<int>(argv.size()), argv.data());
             exit_code = app.solve();
         } catch (...) {
@@ -60,14 +63,13 @@ class TestMaxSATStandalone : public ::testing::Test {
 };
 
 /*****************************************************************************/
-TEST_F(TestMaxSATStandalone, solve_test_00b) {
+TEST_F(TestMaxSATEvaluationSolver, solve_test_00b) {
     /**
      * test_00b: hard "x1", soft "~x1" w=1 -- optimal cost = 1, x1 = 1.
      */
     std::string captured;
     const int   EXIT_CODE =
-        run_and_capture("./test/dat/wcnf/test_00b.wcnf", "2",
-                        &captured);
+        run_and_capture("./test/dat/wcnf/test_00b.wcnf", "2", &captured);
 
     EXPECT_EQ(10, EXIT_CODE);
     EXPECT_NE(std::string::npos, captured.find("o 1"));
@@ -76,15 +78,14 @@ TEST_F(TestMaxSATStandalone, solve_test_00b) {
 }
 
 /*****************************************************************************/
-TEST_F(TestMaxSATStandalone, solve_test_00a) {
+TEST_F(TestMaxSATEvaluationSolver, solve_test_00a) {
     /**
      * test_00a: optimal cost = 0 (all soft clauses can be satisfied
      * simultaneously while satisfying the hard clause).
      */
     std::string captured;
     const int   EXIT_CODE =
-        run_and_capture("./test/dat/wcnf/test_00a.wcnf", "2",
-                        &captured);
+        run_and_capture("./test/dat/wcnf/test_00a.wcnf", "2", &captured);
 
     EXPECT_EQ(10, EXIT_CODE);
     EXPECT_NE(std::string::npos, captured.find("o 0"));

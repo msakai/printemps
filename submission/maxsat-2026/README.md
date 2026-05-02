@@ -1,4 +1,4 @@
-# printemps-maxsat — MaxSAT Evaluation 2026 Anytime Track Submission
+# maxsat_evaluation_solver — MaxSAT Evaluation 2026 Anytime Track Submission
 
 This directory holds the submission package for the MaxSAT Evaluation 2026
 **Main Tracks for Anytime Solvers** (ANYTIME-W and ANYTIME-UW). The solver
@@ -10,13 +10,13 @@ clause into a 0-1 inequality.
 
 ```
 bin/
-  printemps-maxsat          statically linked Linux binary
+  maxsat_evaluation_solver  statically linked Linux binary
   run_ANYTIME-W             launch script for the weighted track
   run_ANYTIME-UW            launch script for the unweighted track
 code/
   printemps-maxsat.tar.gz   source archive (git archive HEAD)
 doc/
-  printemps-maxsat-2026.pdf  1-2 page solver description (IEEE format)
+  printemps-maxsat-2026.pdf 1-2 page solver description (IEEE format)
 ```
 
 ## Reproducing the build
@@ -31,10 +31,11 @@ script/build_maxsat_submission.sh
 ```
 
 This:
-1. wipes any previous `build/application` artefacts;
+
+1. wipes any previous `build/extra` artefacts;
 2. fetches and builds googletest (no-op if already built);
-3. compiles `printemps-maxsat` with `STATIC=ON` inside the docker compose
-   service `develop`;
+3. compiles `maxsat_evaluation_solver` with `STATIC=ON` inside the docker
+   compose service `develop`;
 4. copies the binary plus `run_ANYTIME-{W,UW}` shell scripts to `bin/`;
 5. archives the source via `git archive HEAD` to `code/`.
 
@@ -61,8 +62,11 @@ bin/run_ANYTIME-UW <some_instance.wcnf> 60
   termination. Stdout is set to unit-buffered so that o/v lines are not
   lost in buffer when the harness sends SIGKILL after SIGTERM.
 - Status reporting is conservative: `s SATISFIABLE` whenever a feasible
-  incumbent has been emitted, otherwise `s UNKNOWN`. PRINTEMPS does not
-  prove optimality, so `s OPTIMUM FOUND` is never emitted.
+  incumbent has been emitted, `s UNKNOWN` otherwise. PRINTEMPS does not
+  prove optimality, so `s OPTIMUM FOUND` is never emitted. The wrapper
+  also catches `printemps::model::InfeasibleError` from preprocess and
+  reports `s UNSATISFIABLE` (exit 20) when the hard clauses are detected
+  to be infeasible during variable-bound propagation.
 - Soft-clause weights up to ~2^53 are exactly representable in the
   internal `double`-typed objective; weight sums beyond that incur
   precision loss but do not affect feasibility.

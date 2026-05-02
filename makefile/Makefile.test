@@ -18,6 +18,7 @@ test: build
 	$(BUILD_DIR)/test_option_enumerate; \
 	$(BUILD_DIR)/test_opb; \
 	$(BUILD_DIR)/test_wcnf; \
+	$(BUILD_DIR)/test_extra_maxsat_evaluation; \
 	$(BUILD_DIR)/test_preprocess; \
 	$(BUILD_DIR)/test_solution; \
 	$(BUILD_DIR)/test_standalone; \
