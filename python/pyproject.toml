@@ -20,6 +20,9 @@ classifiers = [
     "Operating System :: MacOS",
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
+dependencies = [
+    "pytest>=8.4.2",
+]
 
 [project.scripts]
 printemps = "printemps._cli:main"

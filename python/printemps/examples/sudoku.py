@@ -28,8 +28,7 @@ def build_model(initial=INITIAL):
 
     x = model.create_variables("x", [N, N, N], 0, 1)
 
-    expression_block = model.create_expressions(
-        "expression_block", [N // 3, N // 3, N])
+    expression_block = model.create_expressions("expression_block", [N // 3, N // 3, N])
     for i in range(N // 3):
         for j in range(N // 3):
             for k in range(N):
@@ -53,8 +52,7 @@ def build_model(initial=INITIAL):
         for k in range(N):
             constraint_column[n, k] = x.selection([n, printemps.ALL, k])
 
-    constraint_block = model.create_constraints(
-        "constraint_block", [N // 3, N // 3, N])
+    constraint_block = model.create_constraints("constraint_block", [N // 3, N // 3, N])
     for i in range(N // 3):
         for j in range(N // 3):
             for k in range(N):

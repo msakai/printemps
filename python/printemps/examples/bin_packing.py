@@ -12,10 +12,12 @@ import random
 import printemps
 
 
-def main(number_of_items: int = 100,
-         number_of_bins: int = 30,
-         bin_capacity: int = 100,
-         seed: int = 0) -> None:
+def main(
+    number_of_items: int = 100,
+    number_of_bins: int = 30,
+    bin_capacity: int = 100,
+    seed: int = 0,
+) -> None:
     rng = random.Random(seed)
 
     item_volumes = [rng.randint(0, 49) for _ in range(number_of_items)]
@@ -29,16 +31,13 @@ def main(number_of_items: int = 100,
     for m in range(number_of_bins):
         total_volume[m] = x.dot([printemps.ALL, m], item_volumes)
 
-    number_of_used_bins = model.create_expression(
-        "number_of_used_bins", y.sum())
+    number_of_used_bins = model.create_expression("number_of_used_bins", y.sum())
 
-    constraint_selection = model.create_constraints(
-        "selection", number_of_items)
+    constraint_selection = model.create_constraints("selection", number_of_items)
     for n in range(number_of_items):
         constraint_selection[n] = x.selection([n, printemps.ALL])
 
-    constraint_total_volume = model.create_constraints(
-        "total_volume", number_of_bins)
+    constraint_total_volume = model.create_constraints("total_volume", number_of_bins)
     for m in range(number_of_bins):
         constraint_total_volume[m] = total_volume(m) <= bin_capacity * y(m)
 

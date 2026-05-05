@@ -19,23 +19,25 @@ import sys
 from pathlib import Path
 
 
-PYTHON_DIR = Path(__file__).resolve().parents[1]   # repo/python/
-SRC = PYTHON_DIR.parent / "printemps"              # repo/printemps/
-DST = PYTHON_DIR / "_vendor" / "printemps"         # repo/python/_vendor/printemps/
+PYTHON_DIR = Path(__file__).resolve().parents[1]  # repo/python/
+SRC = PYTHON_DIR.parent / "printemps"  # repo/printemps/
+DST = PYTHON_DIR / "_vendor" / "printemps"  # repo/python/_vendor/printemps/
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--clean", action="store_true",
-        help="Remove _vendor/ before copying.")
+        "--clean", action="store_true", help="Remove _vendor/ before copying."
+    )
     args = parser.parse_args()
 
     if not (SRC / "printemps.h").exists():
         print(f"ERROR: {SRC / 'printemps.h'} not found.", file=sys.stderr)
-        print("This script must run inside a checkout of the printemps repo "
-              "with the C++ headers available at ../printemps/.",
-              file=sys.stderr)
+        print(
+            "This script must run inside a checkout of the printemps repo "
+            "with the C++ headers available at ../printemps/.",
+            file=sys.stderr,
+        )
         return 1
 
     if DST.exists():

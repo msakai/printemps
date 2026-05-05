@@ -24,14 +24,13 @@ def _validate(grid):
     N = len(grid)
     rows_ok = all(set(row) == set(range(1, N + 1)) for row in grid)
     cols_ok = all(
-        set(grid[r][c] for r in range(N)) == set(range(1, N + 1))
-        for c in range(N)
+        set(grid[r][c] for r in range(N)) == set(range(1, N + 1)) for c in range(N)
     )
     blocks_ok = all(
-        set(grid[3 * bi + dr][3 * bj + dc]
-            for dr in range(3) for dc in range(3))
+        set(grid[3 * bi + dr][3 * bj + dc] for dr in range(3) for dc in range(3))
         == set(range(1, N + 1))
-        for bi in range(3) for bj in range(3)
+        for bi in range(3)
+        for bj in range(3)
     )
     return rows_ok and cols_ok and blocks_ok
 

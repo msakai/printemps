@@ -24,16 +24,13 @@ def test_bin_packing_small():
     for m in range(number_of_bins):
         total_volume[m] = x.dot([printemps.ALL, m], item_volumes)
 
-    number_of_used_bins = model.create_expression(
-        "number_of_used_bins", y.sum())
+    number_of_used_bins = model.create_expression("number_of_used_bins", y.sum())
 
-    constraint_selection = model.create_constraints(
-        "selection", number_of_items)
+    constraint_selection = model.create_constraints("selection", number_of_items)
     for n in range(number_of_items):
         constraint_selection[n] = x.selection([n, printemps.ALL])
 
-    constraint_total_volume = model.create_constraints(
-        "total_volume", number_of_bins)
+    constraint_total_volume = model.create_constraints("total_volume", number_of_bins)
     for m in range(number_of_bins):
         constraint_total_volume[m] = total_volume(m) <= bin_capacity * y(m)
 

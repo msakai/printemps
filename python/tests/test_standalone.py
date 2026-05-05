@@ -31,5 +31,4 @@ def test_standalone_runs(tmp_path):
     finally:
         os.chdir(cwd)
 
-    assert (tmp_path / "incumbent.json").exists() or \
-           (tmp_path / "status.json").exists()
+    assert (tmp_path / "incumbent.json").exists() or (tmp_path / "status.json").exists()

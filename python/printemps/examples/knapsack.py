@@ -11,10 +11,12 @@ import random
 import printemps
 
 
-def main(number_of_items: int = 10000,
-         weight_capacity: int = 30000,
-         volume_capacity: int = 30000,
-         seed: int = 0) -> None:
+def main(
+    number_of_items: int = 10000,
+    weight_capacity: int = 30000,
+    volume_capacity: int = 30000,
+    seed: int = 0,
+) -> None:
     rng = random.Random(seed)
 
     prices = []
