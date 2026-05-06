@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
 project(printemps)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(OpenMP REQUIRED)
 
@@ -14,31 +18,37 @@ option(LINK_STATIC OFF)
 # ##############################################################################
 # switch compiler options according to CMAKE_BUILD_TYPE
 # ##############################################################################
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    add_compile_options(
-        -std=c++17
-        -Wall
-        -O3
-        -Wextra
-        -Wno-error=missing-field-initializers
-        -pthread
-    )
-
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
-        # for Apple Silicon
-        add_compile_options(-mcpu=native)
-    else()
-        # for x86_64
-        add_compile_options(-march=native -mtune=native)
+if(MSVC)
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        add_compile_options(/W3 /O2 /permissive- /utf-8 /bigobj /EHsc /D_USE_MATH_DEFINES /DNOMINMAX)
+    else() # Debug
+        add_compile_options(/W3 /Od /Zi /permissive- /utf-8 /bigobj /EHsc /D_USE_MATH_DEFINES /DNOMINMAX)
     endif()
-else() # Debug
-    add_compile_options(
-        -std=c++17
-        -Wall
-        -Wextra
-        -Wno-error=missing-field-initializers
-        -pthread
-    )
+else()
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        add_compile_options(
+            -Wall
+            -O3
+            -Wextra
+            -Wno-error=missing-field-initializers
+            -pthread
+        )
+
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+            # for Apple Silicon
+            add_compile_options(-mcpu=native)
+        else()
+            # for x86_64
+            add_compile_options(-march=native -mtune=native)
+        endif()
+    else() # Debug
+        add_compile_options(
+            -Wall
+            -Wextra
+            -Wno-error=missing-field-initializers
+            -pthread
+        )
+    endif()
 endif()
 
 # ##############################################################################
@@ -96,11 +106,19 @@ target_include_directories(
 )
 
 if(LINK_STATIC)
-    target_link_options(simple_1 PRIVATE -static-libgcc -static-libstdc++ -static)
-    target_link_options(simple_2 PRIVATE -static-libgcc -static-libstdc++ -static)
-    target_link_options(knapsack PRIVATE -static-libgcc -static-libstdc++ -static)
-    target_link_options(bin_packing PRIVATE -static-libgcc -static-libstdc++ -static)
-    target_link_options(sudoku PRIVATE -static-libgcc -static-libstdc++ -static)
+    if(MSVC)
+        set_property(TARGET simple_1    PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET simple_2    PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET knapsack    PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET bin_packing PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET sudoku      PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    else()
+        target_link_options(simple_1 PRIVATE -static-libgcc -static-libstdc++ -static)
+        target_link_options(simple_2 PRIVATE -static-libgcc -static-libstdc++ -static)
+        target_link_options(knapsack PRIVATE -static-libgcc -static-libstdc++ -static)
+        target_link_options(bin_packing PRIVATE -static-libgcc -static-libstdc++ -static)
+        target_link_options(sudoku PRIVATE -static-libgcc -static-libstdc++ -static)
+    endif()
 endif()
 
 # ##############################################################################

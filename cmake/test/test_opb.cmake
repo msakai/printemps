@@ -16,7 +16,7 @@ target_link_libraries(
     test_opb
     PUBLIC gtest
     PUBLIC gtest_main
-    PUBLIC pthread
+    PUBLIC Threads::Threads
 )
 
 add_test(

@@ -1,28 +1,40 @@
 cmake_minimum_required(VERSION 3.10)
 project(test)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(Threads REQUIRED)
+
 # ##############################################################################
 # switch compiler options according to CMAKE_BUILD_TYPE
 # ##############################################################################
 message(${CMAKE_BUILD_TYPE})
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    add_compile_options(
-        -std=c++17
-        -Wall
-        -O3
-        -Wextra
-        -Wno-error=missing-field-initializers
-        -pthread
-    )
-else() # Debug
-    add_compile_options(
-        -std=c++17
-        -Wall
-        -Wextra
-        -Wno-error=missing-field-initializers
-        -pthread
-    )
+if(MSVC)
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        add_compile_options(/W3 /O2 /permissive- /utf-8 /bigobj /EHsc /D_USE_MATH_DEFINES /DNOMINMAX)
+    else() # Debug
+        add_compile_options(/W3 /Od /Zi /permissive- /utf-8 /bigobj /EHsc /D_USE_MATH_DEFINES /DNOMINMAX)
+    endif()
+else()
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        add_compile_options(
+            -Wall
+            -O3
+            -Wextra
+            -Wno-error=missing-field-initializers
+            -pthread
+        )
+    else() # Debug
+        add_compile_options(
+            -Wall
+            -Wextra
+            -Wno-error=missing-field-initializers
+            -pthread
+        )
+    endif()
 endif()
 
 # ##############################################################################
