@@ -76,15 +76,17 @@ jobs:
       - name: Build googletest (MSVC)
         shell: pwsh
         run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
           cmake -S cmake/external -B build/external/cmake -G "Ninja Multi-Config" `
-                -DTOP_DIR="${{ github.workspace }}"
+                -DTOP_DIR="$top"
           cmake --build build/external/cmake --config Release
 
       - name: Configure tests (MSVC)
         shell: pwsh
         run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
           cmake -S cmake/test -B build/test/Release -G "Ninja Multi-Config" `
-                -DTOP_DIR="${{ github.workspace }}" -DCMAKE_BUILD_TYPE=Release
+                -DTOP_DIR="$top" -DCMAKE_BUILD_TYPE=Release
 
       - name: Build tests (MSVC)
         shell: pwsh
@@ -97,13 +99,15 @@ jobs:
       - name: Build application (MSVC, smoke)
         shell: pwsh
         run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
           cmake -S cmake/application -B build/application/Release -G "Ninja Multi-Config" `
-                -DTOP_DIR="${{ github.workspace }}" -DCMAKE_BUILD_TYPE=Release
+                -DTOP_DIR="$top" -DCMAKE_BUILD_TYPE=Release
           cmake --build build/application/Release --config Release -j
 
       - name: Build examples (MSVC, smoke)
         shell: pwsh
         run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
           cmake -S cmake/example -B build/example/Release -G "Ninja Multi-Config" `
-                -DTOP_DIR="${{ github.workspace }}" -DCMAKE_BUILD_TYPE=Release
+                -DTOP_DIR="$top" -DCMAKE_BUILD_TYPE=Release
           cmake --build build/example/Release --config Release -j
