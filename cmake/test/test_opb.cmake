@@ -22,4 +22,5 @@ target_link_libraries(
 add_test(
     NAME test_opb
     COMMAND test_opb --gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )

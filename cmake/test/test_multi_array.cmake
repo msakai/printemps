@@ -22,4 +22,5 @@ target_link_libraries(
 add_test(
     NAME test_multi_array
     COMMAND test_multi_array --gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )

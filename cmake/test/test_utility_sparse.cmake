@@ -22,4 +22,5 @@ target_link_libraries(
 add_test(
     NAME test_utility_sparse
     COMMAND test_utility_sparse--gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )

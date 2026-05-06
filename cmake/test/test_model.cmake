@@ -22,4 +22,5 @@ target_link_libraries(
 add_test(
     NAME test_model
     COMMAND test_model --gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )
