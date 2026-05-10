@@ -68,6 +68,24 @@ printemps path/to/instance.mps -t 60 -v 2
 See `application/standalone/main.cpp` and `printemps/standalone/argparser.h`
 for the full set of supported flags.
 
+## Releasing to PyPI
+
+The printemps C++ headers live in the sibling `printemps/` directory of
+this repository. For development builds CMake picks them up directly. For
+distribution, the headers are vendored into `python/_vendor/printemps/`
+and bundled into the source tarball so end users do not need a checkout
+of the printemps repository to install from PyPI.
+
+```bash
+cd python
+python tools/vendor.py        # copy ../printemps/ -> _vendor/printemps/
+python -m build               # produces dist/printemps-X.Y.Z.tar.gz and the wheel
+twine upload dist/*           # publish
+```
+
+`tools/vendor.py` is idempotent and can be re-run before each release.
+`_vendor/` is gitignored, so day-to-day development is unaffected.
+
 ## Translation cheat sheet
 
 | C++ idiom                                   | Python idiom                                  |
