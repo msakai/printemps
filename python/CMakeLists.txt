@@ -5,9 +5,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Locate the umbrella printemps header. ${PROJECT_SOURCE_DIR} is python/, so
-# the header lives at ../printemps/printemps.h.
-set(PRINTEMPS_HEADER_DIR "${PROJECT_SOURCE_DIR}/../printemps"
+# Locate the umbrella printemps header. When building from an sdist tarball
+# the headers are vendored into python/_vendor/printemps/ at release time
+# (see tools/vendor.py); for development builds out of the source repo we
+# fall back to the sibling printemps/ directory.
+if(EXISTS "${PROJECT_SOURCE_DIR}/_vendor/printemps/printemps.h")
+    set(PRINTEMPS_HEADER_DIR_DEFAULT "${PROJECT_SOURCE_DIR}/_vendor/printemps")
+else()
+    set(PRINTEMPS_HEADER_DIR_DEFAULT "${PROJECT_SOURCE_DIR}/../printemps")
+endif()
+
+set(PRINTEMPS_HEADER_DIR "${PRINTEMPS_HEADER_DIR_DEFAULT}"
     CACHE PATH "Path to the printemps header-only include directory")
 
 if(NOT EXISTS "${PRINTEMPS_HEADER_DIR}/printemps.h")

@@ -34,6 +34,10 @@ cmake.source-dir = "."
 cmake.build-type = "Release"
 wheel.packages = ["printemps"]
 build-dir = "build/{wheel_tag}"
+# Bundle the vendored printemps headers (populated by tools/vendor.py before
+# `python -m build --sdist`) into the source distribution so that wheels can
+# be built from the tarball without the surrounding repository.
+sdist.include = ["_vendor/printemps/**"]
 
 [tool.scikit-build.cmake.define]
 CMAKE_POSITION_INDEPENDENT_CODE = "ON"
