@@ -199,9 +199,11 @@ class Standalone {
          * values will be used.
          */
         if (!m_argparser.initial_solution_file_name.empty()) {
-            const auto INITIAL_SOLUTION =
-                printemps::helper::read_names_and_values(
-                    m_argparser.initial_solution_file_name);
+            auto INITIAL_SOLUTION = printemps::helper::read_names_and_values(
+                m_argparser.initial_solution_file_name);
+            if (EXTENSION == "opb" || EXTENSION == "wbo") {
+                m_opb.augment_solution(INITIAL_SOLUTION);
+            }
             m_model.import_solution(INITIAL_SOLUTION);
         }
 
