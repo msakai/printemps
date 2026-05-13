@@ -57,7 +57,7 @@ jobs:
     - name: Install googletest
       run: make -f makefile/Makefile.external CC=${{ matrix.cfg.cc }} CXX=${{ matrix.cfg.cxx }}
 
-    - name: Run tests. 
+    - name: Run tests.
       run: make -f makefile/Makefile.test CC=${{ matrix.cfg.cc }} CXX=${{ matrix.cfg.cxx }}
 
     # For MSYS2-based builds, use the msys shell to avoid contamination with the system's Python.
@@ -82,3 +82,55 @@ jobs:
         python -m pip install pytest
         pytest python/tests
       shell: msys2 {0}
+
+  build-msvc:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC dev environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Build googletest (MSVC)
+        shell: pwsh
+        run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
+          cmake -S cmake/external -B build/external/cmake -G "Ninja Multi-Config" `
+                -DTOP_DIR="$top"
+          cmake --build build/external/cmake --config Release
+
+      - name: Configure tests (MSVC)
+        shell: pwsh
+        run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
+          cmake -S cmake/test -B build/test/Release -G "Ninja Multi-Config" `
+                -DTOP_DIR="$top" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build tests (MSVC)
+        shell: pwsh
+        run: cmake --build build/test/Release --config Release -j
+
+      - name: Run tests (MSVC)
+        shell: pwsh
+        run: ctest --test-dir build/test/Release -C Release --output-on-failure
+
+      - name: Build application (MSVC, smoke)
+        shell: pwsh
+        run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
+          cmake -S cmake/application -B build/application/Release -G "Ninja Multi-Config" `
+                -DTOP_DIR="$top" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/application/Release --config Release -j
+
+      - name: Build examples (MSVC, smoke)
+        shell: pwsh
+        run: |
+          $top = "${{ github.workspace }}".Replace('\', '/')
+          cmake -S cmake/example -B build/example/Release -G "Ninja Multi-Config" `
+                -DTOP_DIR="$top" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/example/Release --config Release -j

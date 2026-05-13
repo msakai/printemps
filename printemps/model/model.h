@@ -4000,7 +4000,7 @@ class Model {
                     *variable_ptrs[NEGATED_VARIABLE_NAME] +
                         *variable_ptrs["~" + NEGATED_VARIABLE_NAME] ==
                     1;
-                hard_constraint_proxy(i).set_name(
+                negated_variable_constraint_proxy(i).set_name(
                     "negated_variable_constraints_" + NEGATED_VARIABLE_NAME);
             }
         }
