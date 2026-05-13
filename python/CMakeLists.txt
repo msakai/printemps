@@ -35,15 +35,26 @@ pybind11_add_module(_printemps MODULE src/_printemps.cpp)
 
 target_include_directories(_printemps PRIVATE "${PRINTEMPS_HEADER_DIR}")
 
-target_compile_options(_printemps PRIVATE
-    -O3
-    -Wall
-    -Wextra
-    -Wno-error=missing-field-initializers
-    -Wno-unused-parameter
-    -Wno-unused-variable
-    -Wno-deprecated-declarations
-)
+if(MSVC)
+    target_compile_options(_printemps PRIVATE
+        /O2
+        /W3
+        /bigobj
+        /wd4244
+        /wd4267
+        /wd4996
+    )
+else()
+    target_compile_options(_printemps PRIVATE
+        -O3
+        -Wall
+        -Wextra
+        -Wno-error=missing-field-initializers
+        -Wno-unused-parameter
+        -Wno-unused-variable
+        -Wno-deprecated-declarations
+    )
+endif()
 
 if(OpenMP_CXX_FOUND)
     target_link_libraries(_printemps PRIVATE OpenMP::OpenMP_CXX)
