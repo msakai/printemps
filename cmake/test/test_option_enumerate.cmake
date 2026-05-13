@@ -16,10 +16,11 @@ target_link_libraries(
     test_option_enumerate
     PUBLIC gtest
     PUBLIC gtest_main
-    PUBLIC pthread
+    PUBLIC Threads::Threads
 )
 
 add_test(
     NAME test_option_enumerate
     COMMAND test_option_enumerate --gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )
