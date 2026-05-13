@@ -618,6 +618,42 @@ struct OPB {
 
         this->setup_variable_information();
     }
+
+    inline void augment_solution(
+        std::unordered_map<std::string, int> &a_VARIABLES) {
+        // augment negated variables
+        for (const auto &variable_name : negated_variable_names) {
+            const auto &negated_variable_name = "~" + variable_name;
+            if (a_VARIABLES.find(negated_variable_name) == a_VARIABLES.end() &&
+                a_VARIABLES.find(variable_name) != a_VARIABLES.end()) {
+                a_VARIABLES[negated_variable_name] =
+                    1 - a_VARIABLES[variable_name];
+            }
+        }
+
+        // augment product variables
+        for (const auto &product_variable_name : product_variable_names) {
+            if (a_VARIABLES.find(product_variable_name.first) !=
+                a_VARIABLES.end()) {
+                continue;
+            }
+
+            int  value     = 1;
+            bool not_found = false;
+            for (const auto &variable_name : product_variable_name.second) {
+                if (a_VARIABLES.find(variable_name) == a_VARIABLES.end()) {
+                    not_found = true;
+                    break;
+                } else {
+                    value *= a_VARIABLES[variable_name];
+                }
+            }
+
+            if (!not_found) {
+                a_VARIABLES[product_variable_name.first] = value;
+            }
+        }
+    }
 };
 }  // namespace printemps::opb
 #endif
