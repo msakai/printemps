@@ -53,7 +53,7 @@ struct MaxSATEvaluationSolverArgparser {
          * invoked as `./solver <input> <timeout>`, with no flags. Anything
          * else is treated as a usage error by the caller.
          */
-        if (argc < 3) {
+        if (argc < 2) {
             throw std::runtime_error(utility::format_error_location(
                 __FILE__, __LINE__, __func__,
                 "Two positional arguments are required: "
@@ -62,19 +62,21 @@ struct MaxSATEvaluationSolverArgparser {
 
         this->wcnf_file_name = argv[1];
 
-        try {
-            this->timeout_seconds = std::stod(argv[2]);
-        } catch (const std::exception &) {
-            throw std::runtime_error(utility::format_error_location(
-                __FILE__, __LINE__, __func__,
-                std::string("Invalid timeout argument: ") + argv[2]));
+        if (argc >= 3) {
+            try {
+                this->timeout_seconds = std::stod(argv[2]);
+            } catch (const std::exception &) {
+                throw std::runtime_error(utility::format_error_location(
+                    __FILE__, __LINE__, __func__,
+                    std::string("Invalid timeout argument: ") + argv[2]));
+            }
+            if (this->timeout_seconds <= 0.0) {
+                throw std::runtime_error(utility::format_error_location(
+                    __FILE__, __LINE__, __func__,
+                    std::string("Timeout must be positive: ") + argv[2]));
+            }
+            this->is_specified_timeout = true;
         }
-        if (this->timeout_seconds <= 0.0) {
-            throw std::runtime_error(utility::format_error_location(
-                __FILE__, __LINE__, __func__,
-                std::string("Timeout must be positive: ") + argv[2]));
-        }
-        this->is_specified_timeout = true;
     }
 };
 }  // namespace printemps::extra::maxsat_evaluation

@@ -58,7 +58,7 @@ class MaxSATEvaluationSolver {
 
     /*************************************************************************/
     inline void setup(const int argc, const char *argv[]) {
-        if (argc < 3) {
+        if (argc < 2) {
             m_argparser.print_usage();
             std::exit(1);
         }
@@ -83,10 +83,12 @@ class MaxSATEvaluationSolver {
          * the final s/o/v lines before SIGTERM->SIGKILL. The margin matters
          * less for the long timeouts but is critical at 60 s.
          */
-        const double SAFETY_MARGIN_SECONDS = 1.0;
-        m_option.general.time_max =
-            std::max(m_argparser.timeout_seconds - SAFETY_MARGIN_SECONDS,
-                     m_argparser.timeout_seconds * 0.95);
+        if (m_argparser.is_specified_timeout) {
+            const double SAFETY_MARGIN_SECONDS = 1.0;
+            m_option.general.time_max =
+                std::max(m_argparser.timeout_seconds - SAFETY_MARGIN_SECONDS,
+                         m_argparser.timeout_seconds * 0.95);
+        }
 
         /**
          * Improve PRINTEMPS' behaviour on Boolean disjunctive constraints.
