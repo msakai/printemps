@@ -23,7 +23,7 @@ class TestOPBTopCost : public ::testing::Test {
 TEST_F(TestOPBTopCost, initialize) {
     opb::OPBTopCost top_cost;
     EXPECT_FALSE(top_cost.is_defined);
-    EXPECT_EQ(std::numeric_limits<int>::max(), top_cost.value);
+    EXPECT_EQ(std::numeric_limits<int64_t>::max(), top_cost.value);
 }
 
 }  // namespace
