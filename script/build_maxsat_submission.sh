@@ -26,11 +26,11 @@ rm -f  "${SUBMISSION_DIR}/code/printemps-maxsat.tar.gz"
 echo "[2/4] Building maxsat_evaluation_solver statically inside docker ..."
 mkdir -p "${SUBMISSION_DIR}/bin" "${SUBMISSION_DIR}/code" "${SUBMISSION_DIR}/doc"
 
-docker compose run --rm develop bash -c '
+DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose run --rm develop bash -c '
     set -euo pipefail
     cd /home/work
     make -f makefile/Makefile.external
-    make -f makefile/Makefile.extra STATIC=ON
+    make -f makefile/Makefile.extra STATIC=ON CPU_ARCH=none
 '
 
 cp "${REPO_ROOT}/build/extra/Release/maxsat_evaluation_solver" \
