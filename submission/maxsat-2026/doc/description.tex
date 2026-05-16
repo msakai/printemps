@@ -89,6 +89,22 @@ The wrapper subscribes to the per-iteration callback of PRINTEMPS' Tabu Search l
 Standard output is set to unit-buffered mode so that each line reaches the harness before the \texttt{SIGKILL} that follows \texttt{SIGTERM}.
 The tracks also mandate single-threaded execution; PRINTEMPS is therefore configured to use a single OpenMP thread.
 
+\section{Provenance}
+The submitted system extends PRINTEMPS \cite{printemps}, an open-source C++ metaheuristic ILP solver originally authored by the first author. PRINTEMPS is distributed as a header-only library and has no proprietary runtime dependencies.
+The PRINTEMPS core (the ILP modeler/solver library and its Weighted Tabu Search algorithm) and the Pseudo-Boolean Competition 2025 extension were both developed without generative AI assistance.
+The structural layout of the competition wrapper and the soft-constraint encoding pattern are inherited from our Pseudo-Boolean Competition 2025 submission \cite{printemps-pb25}: the new wrapper under \texttt{extra/maxsat\_evaluation/} directly mirrors the previous \texttt{extra/pb\_competition\_2025/}.
+
+The components newly added for this submission, with approximate line counts, are:
+\begin{itemize}
+\item the WCNF parser module \texttt{printemps/wcnf/} ($\sim$330 lines);
+\item the \texttt{import\_wcnf} method on the IP model in \texttt{printemps/model/model.h} ($\sim$135 lines);
+\item the competition wrapper under \texttt{extra/maxsat\_evaluation/} ($\sim$340 lines);
+\item unit tests for the parser and an end-to-end test for the wrapper ($\sim$420 lines).
+\end{itemize}
+This new code, together with the corresponding build-system updates and the present description, was developed with the assistance of Claude Code \cite{claude-code} (Anthropic, invoked with the Claude Opus 4.7 model) used in a conversational pair-programming style. Every generated change was reviewed by the second author before being committed; the second author also directed the design, including the decision to keep the wrapper isolated under \texttt{extra/}, the WCNF-to-IP encoding scheme, and the error-handling protocol for the anytime tracks. The competition's regression test suite \cite{mse26} was used during development to validate parser correctness and the \texttt{s UNSATISFIABLE} exit path triggered by bound-propagation infeasibility.
+
+The submitted Linux binary is built statically inside the project's Docker image (Ubuntu~22.04) and contains no proprietary or closed-source components.
+
 \section{Conclusion}
 The metaheuristic ILP solver PRINTEMPS has been extended to handle MaxSAT problems by reusing the PB soft-constraint encoding and adding a WCNF front-end and an anytime output protocol.
 
@@ -100,7 +116,7 @@ PRINTEMPS C++ metaheuristics modeler/solver for general integer optimization pro
 Pseudo-Boolean Competition 2025, \url{https://www.cril.univ-artois.fr/PB25/}.
 
 \bibitem{printemps-pb25}
-Y.~Koguma and M.~Sakai, ``An Incomplete Approach to Pseudo-Boolean Problems with Metaheuristic Solver PRINTEMPS,'' Solver description, Pseudo-Boolean Competition 2025.
+Y.~Koguma and M.~Sakai, ``An Incomplete Approach to Pseudo-Boolean Problems with Metaheuristic Solver PRINTEMPS,'' Solver description, Pseudo-Boolean Competition 2025, \url{https://www.cril.univ-artois.fr/PB25/descr/PRINTEMPS-Pseudo_Boolean_Competition_2025.pdf}.
 
 \bibitem{mse26}
 MaxSAT Evaluation 2026, \url{https://maxsat-evaluations.github.io/2026/}.
@@ -110,6 +126,9 @@ K.~Nonobe and T.~Ibaraki, ``A Tabu Search Approach to the Constraint Satisfactio
 
 \bibitem{Koguma.2024}
 Y.~Koguma, ``Tabu Search-Based Heuristic Solver for General Integer Linear Programming Problems,'' {\em IEEE Access}, Vol.~12, pp.~19059--19076, 2024, doi: 10.1109/ACCESS.2024.3361323.
+
+\bibitem{claude-code}
+Anthropic, ``Claude Code,'' an AI-assisted coding agent, \url{https://www.anthropic.com/claude-code}.
 
 \end{thebibliography}
 \end{document}
