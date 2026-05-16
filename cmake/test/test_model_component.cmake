@@ -16,10 +16,11 @@ target_link_libraries(
     test_model_component
     PUBLIC gtest
     PUBLIC gtest_main
-    PUBLIC pthread
+    PUBLIC Threads::Threads
 )
 
 add_test(
     NAME test_model_component
     COMMAND test_model_component --gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )

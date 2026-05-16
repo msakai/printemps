@@ -17,10 +17,11 @@ target_link_libraries(
     test_extra_maxsat_evaluation
     PUBLIC gtest
     PUBLIC gtest_main
-    PUBLIC pthread
+    PUBLIC Threads::Threads
 )
 
 add_test(
     NAME test_extra_maxsat_evaluation
     COMMAND test_extra_maxsat_evaluation --gtest_output=xml
+    WORKING_DIRECTORY ${TOP_DIR}
 )
