@@ -1,0 +1,115 @@
+%% Template: IEEE Bare Demo Template for Conferences
+%% https://www.overleaf.com/latex/templates/ieee-bare-demo-template-for-conferences/ypypvwjmvtdf
+\documentclass[conference]{IEEEtran}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{url}
+\usepackage{bm}
+
+\begin{document}
+\title{\huge An Anytime Approach to MaxSAT Problems \\with Metaheuristic Solver PRINTEMPS}
+
+% author names and affiliations
+\author{\IEEEauthorblockN{Yuji Koguma}
+\IEEEauthorblockA{
+Email: yuji.koguma@gmail.com}
+\and
+\IEEEauthorblockN{Masahiro Sakai}
+\IEEEauthorblockA{
+Email: masahiro.sakai@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+PRINTEMPS is a metaheuristic solver originally developed for general integer linear programming (ILP) problems. For the MaxSAT Evaluation 2026, it has been extended to handle MaxSAT problems by linearizing each WCNF clause into a 0--1 inequality and translating soft clauses into a weighted objective penalty.
+\end{abstract}
+
+\section{Introduction}
+PRINTEMPS (PoRtable INTEger Mathematical Programming Solver) is a metaheuristic solver developed by the first author for general integer linear programming (ILP) problems \cite{printemps}.
+For the Pseudo-Boolean Competition 2025 \cite{pb25}, it was extended to handle Pseudo-Boolean (PB) problems, including those with nonlinear terms and soft constraints \cite{printemps-pb25}.
+The MaxSAT extension submitted here reuses the PB encoding machinery for soft constraints and adds a WCNF front-end together with an anytime-style output protocol.
+This document describes the supported tracks, the computational overview of PRINTEMPS, and the MaxSAT-specific extension.
+
+\section{Supported Tracks}
+Since PRINTEMPS is based on heuristics, it can prove neither the optimality of a solution nor the unsatisfiability of an instance in general.
+Therefore, we submitted to the {\bf Main Tracks for Anytime Solvers}, namely {\bf ANYTIME-W} (weighted) and {\bf ANYTIME-UW} (unweighted).
+The same binary handles both tracks, since the only difference between them is the weight distribution of the soft clauses in the input WCNF file \cite{mse26}.
+
+The solver consumes the new WCNF format (post-2022): hard clauses are prefixed with \texttt{h}, soft clauses begin with an integer weight, and each clause is terminated with \texttt{0}.
+Upon termination---either at the wall-clock limit or after receiving \texttt{SIGTERM} from the judging harness---the solver outputs the best assignment found so far as an \texttt{o}/\texttt{v} pair followed by a single status line \texttt{s SATISFIABLE} (exit code 10) or \texttt{s UNKNOWN} (exit code 0).
+As an additional safety net, the wrapper also reports \texttt{s UNSATISFIABLE} (exit code 20) when bound propagation during preprocess detects that the hard clauses are infeasible.
+
+\section{Computational Overview of PRINTEMPS}
+An ILP problem can be formulated as follows:
+%
+\begin{IEEEeqnarray}{rcl}
+    (\mathrm{ILP}): &\underset{\bm{x} \in \mathbb{Z}^{N},\, \bm{l} \le \bm{x} \le \bm{u}}{\mathrm{minimize}}\,& \bm{c}^{\top}\bm{x} \nonumber \\
+    &\mathrm{subject\,to} \enspace & \bm{A}_{1}^{\top}\bm{x} = \bm{b}_{1}, \enspace \bm{A}_{2}^{\top}\bm{x} \le \bm{b}_{2}, \nonumber
+\end{IEEEeqnarray}
+%
+where $N$ is the number of variables, $\bm{c} \in \mathbb{R}^{N}$ is the cost vector, and $\bm{l}, \bm{u} \in \mathbb{Z}^{N}$ $(\bm{l} \le \bm{u})$ are the lower and upper bounds of $\bm{x}$, respectively.
+The matrices $\bm{A}_{1}, \bm{A}_{2}$ and the vectors $\bm{b}_{1}, \bm{b}_{2}$ have appropriate dimensions consistent with $\bm{x}$.
+
+PRINTEMPS searches for solutions to an instance of (ILP) using Weighted Tabu Search that minimizes an objective function penalized by constraint violations \cite{Nonobe.1998}.
+It also incorporates performance-enhancing techniques tailored for (ILP).
+They include instance size reduction, dependent variable extraction, neighborhood filtering, and incremental penalty evaluation \cite{Koguma.2024}.
+
+\section{Extension for MaxSAT Problems}
+\subsection{Encoding of clauses}
+Let $x_{i} \in \{0, 1\}$ denote the propositional variable indexed by $i$, and let a clause be a disjunction of literals $C = (\ell_{1} \vee \ell_{2} \vee \cdots \vee \ell_{k})$.
+We split the literals into positive ones $P(C) = \{i \mid x_{i} \in C\}$ and negative ones $N(C) = \{i \mid \neg x_{i} \in C\}$.
+The clause is satisfied if and only if at least one positive literal evaluates to $1$ or at least one negated variable evaluates to $0$, which is equivalent to
+%
+\begin{IEEEeqnarray}{c}
+    \sum_{i \in P(C)} x_{i} - \sum_{j \in N(C)} x_{j} \;\ge\; 1 - |N(C)|. \nonumber
+\end{IEEEeqnarray}
+%
+Each hard clause is added to the model directly as such a linear constraint.
+
+\subsection{Soft clauses}
+A soft clause with weight $w \ge 1$ is handled as a special case of the soft inequality treatment introduced for PB problems \cite{printemps-pb25}.
+Since a clause is a one-sided $\ge$ constraint, only a single lower-side slack variable $y^{-} \in \{0, 1\}$ is required:
+%
+\begin{IEEEeqnarray}{c}
+    \sum_{i \in P(C)} x_{i} - \sum_{j \in N(C)} x_{j} + y^{-} \;\ge\; 1 - |N(C)|, \nonumber
+\end{IEEEeqnarray}
+%
+together with the penalty $w \cdot y^{-}$ added to the objective function.
+Because the unrelaxed left-hand side falls below the right-hand side by exactly one when the clause is falsified, $y^{-}$ acts as the indicator of clause falsification, and the total objective penalty equals the sum of weights of unsatisfied soft clauses.
+
+Soft-clause weights are read from the WCNF file as 64-bit unsigned integers and converted to double-precision floating-point coefficients in the objective penalty.
+Weight sums up to $2^{53}$ are represented exactly; beyond that, rounding may occur but does not affect feasibility of the underlying assignment.
+
+\subsection{Anytime behavior}
+The MaxSAT Evaluation anytime tracks score solvers based on the quality of every reported intermediate solution \cite{mse26}.
+The wrapper subscribes to the per-iteration callback of PRINTEMPS' Tabu Search loop and emits a fresh \texttt{o}/\texttt{v} pair whenever the current feasible incumbent strictly improves over the previously reported one.
+Standard output is set to unit-buffered mode so that each line reaches the harness before the \texttt{SIGKILL} that follows \texttt{SIGTERM}.
+The tracks also mandate single-threaded execution; PRINTEMPS is therefore configured to use a single OpenMP thread.
+
+\section{Conclusion}
+The metaheuristic ILP solver PRINTEMPS has been extended to handle MaxSAT problems by reusing the PB soft-constraint encoding and adding a WCNF front-end and an anytime output protocol.
+
+\begin{thebibliography}{1}
+\bibitem{printemps}
+PRINTEMPS C++ metaheuristics modeler/solver for general integer optimization problems, \url{https://snowberryfield.github.io/printemps/}.
+
+\bibitem{pb25}
+Pseudo-Boolean Competition 2025, \url{https://www.cril.univ-artois.fr/PB25/}.
+
+\bibitem{printemps-pb25}
+Y.~Koguma and M.~Sakai, ``An Incomplete Approach to Pseudo-Boolean Problems with Metaheuristic Solver PRINTEMPS,'' Solver description, Pseudo-Boolean Competition 2025.
+
+\bibitem{mse26}
+MaxSAT Evaluation 2026, \url{https://maxsat-evaluations.github.io/2026/}.
+
+\bibitem{Nonobe.1998}
+K.~Nonobe and T.~Ibaraki, ``A Tabu Search Approach to the Constraint Satisfaction Problem as a General Problem Solver,'' \emph{Eur. J. Oper. Res.}, Vol.~106, pp.~599--623, 1998, doi:10.1016/S0377-2217(97)00294-4.
+
+\bibitem{Koguma.2024}
+Y.~Koguma, ``Tabu Search-Based Heuristic Solver for General Integer Linear Programming Problems,'' {\em IEEE Access}, Vol.~12, pp.~19059--19076, 2024, doi: 10.1109/ACCESS.2024.3361323.
+
+\end{thebibliography}
+\end{document}
