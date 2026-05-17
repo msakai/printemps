@@ -20,6 +20,7 @@ class Standalone {
     Argparser           m_argparser;
     mps::MPS            m_mps;
     opb::OPB            m_opb;
+    wcnf::WCNF          m_wcnf;
     model::IPModel      m_model;
     option::Option      m_option;
     utility::TimeKeeper m_time_keeper;
@@ -41,6 +42,7 @@ class Standalone {
         m_argparser.initialize();
         m_mps.initialize();
         m_opb.initialize();
+        m_wcnf.initialize();
         m_model.initialize();
         m_option.initialize();
         m_time_keeper.initialize();
@@ -104,6 +106,9 @@ class Standalone {
         } else if (EXTENSION == "opb" || EXTENSION == "wbo") {
             m_opb.read_opb(m_argparser.instance_file_name);
             m_model.import_opb(m_opb);
+        } else if (EXTENSION == "wcnf") {
+            m_wcnf.read_wcnf(m_argparser.instance_file_name);
+            m_model.import_wcnf(m_wcnf);
         } else {
             throw std::runtime_error(printemps::utility::format_error_location(
                 __FILE__, __LINE__, __func__,

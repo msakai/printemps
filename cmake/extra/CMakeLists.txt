@@ -68,6 +68,25 @@ if(LINK_STATIC)
     endif()
 endif()
 
+# maxsat_evaluation_solver for the MaxSAT Evaluation anytime tracks
+add_executable(
+    maxsat_evaluation_solver ${TOP_DIR}/extra/maxsat_evaluation/main.cpp
+)
+
+target_include_directories(
+    maxsat_evaluation_solver
+    PRIVATE ${TOP_DIR}/printemps/
+    PRIVATE ${TOP_DIR}/external/include/
+)
+
+if(LINK_STATIC)
+    if(MSVC)
+        set_property(TARGET maxsat_evaluation_solver PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    else()
+        target_link_options(maxsat_evaluation_solver PRIVATE -static-libgcc -static-libstdc++ -static)
+    endif()
+endif()
+
 # ##############################################################################
 # END
 # ##############################################################################
