@@ -67,6 +67,11 @@ bin/run_ANYTIME-UW <some_instance.wcnf> 60
   also catches `printemps::model::InfeasibleError` from preprocess and
   reports `s UNSATISFIABLE` (exit 20) when the hard clauses are detected
   to be infeasible during variable-bound propagation.
-- Soft-clause weights up to ~2^53 are exactly representable in the
-  internal `double`-typed objective; weight sums beyond that incur
-  precision loss but do not affect feasibility.
+- The internal PRINTEMPS objective is accumulated in `double`, so for
+  weight sums beyond ~2^53 it loses precision in its lower bits. The
+  `o`-line is therefore not derived from that double value; it is
+  recomputed in `uint64_t` from the original WCNF soft-clause weights
+  and the per-clause violation flags before printing, so it remains
+  exact for any weight sum that fits in `uint64_t` (the MSE rules
+  guarantee `weight_sum < 2^64 - 1`). The double objective is only used
+  to drive the search and to compare incumbents.
