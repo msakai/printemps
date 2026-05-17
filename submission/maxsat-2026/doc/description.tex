@@ -24,7 +24,7 @@ Email: masahiro.sakai@gmail.com}
 \maketitle
 
 \begin{abstract}
-PRINTEMPS is a metaheuristic solver originally developed for general integer linear programming (ILP) problems. For the MaxSAT Evaluation 2026, it has been extended to handle MaxSAT problems by linearizing each WCNF clause into a 0--1 inequality and translating soft clauses into a weighted objective penalty.
+PRINTEMPS is a metaheuristic solver originally developed for general integer linear programming (ILP) problems. For MaxSAT Evaluation 2026, it has been extended to handle MaxSAT problems by translating each WCNF clause into a 0--1 inequality and translating soft clauses into a weighted objective penalty.
 \end{abstract}
 
 \section{Introduction}
@@ -40,7 +40,7 @@ The same binary handles both tracks, since the only difference between them is t
 
 The solver consumes the new WCNF format (post-2022): hard clauses are prefixed with \texttt{h}, soft clauses begin with an integer weight, and each clause is terminated with \texttt{0}.
 Upon termination---either at the wall-clock limit or after receiving \texttt{SIGTERM} from the judging harness---the solver outputs the best assignment found so far as an \texttt{o}/\texttt{v} pair followed by a single status line \texttt{s SATISFIABLE} (exit code 10) or \texttt{s UNKNOWN} (exit code 0).
-As an additional safety net, the wrapper also reports \texttt{s UNSATISFIABLE} (exit code 20) when bound propagation during preprocess detects that the hard clauses are infeasible.
+The wrapper also reports \texttt{s UNSATISFIABLE} (exit code 20) when bound propagation during preprocess detects that the hard clauses are infeasible.
 
 \section{Computational Overview of PRINTEMPS}
 An ILP problem can be formulated as follows:
@@ -90,8 +90,9 @@ The tracks also mandate single-threaded execution; PRINTEMPS is therefore config
 
 \section{Provenance}
 The submitted system extends PRINTEMPS \cite{printemps}, an open-source C++ metaheuristic ILP solver originally authored by the first author. PRINTEMPS is distributed as a header-only library and has no proprietary runtime dependencies.
+
 The PRINTEMPS core (the ILP modeler/solver library and its Weighted Tabu Search algorithm) and the Pseudo-Boolean Competition 2025 extension were both developed without generative AI assistance.
-The structural layout of the competition wrapper and the soft-constraint encoding pattern are inherited from our Pseudo-Boolean Competition 2025 submission \cite{printemps-pb25}: the new wrapper under \texttt{extra/maxsat\_evaluation/} directly mirrors the previous \texttt{extra/pb\_competition\_2025/}.
+The structural layout of the competition wrapper and the soft-constraint encoding pattern are inherited from our Pseudo-Boolean Competition 2025 submission \cite{printemps-pb25}.
 
 The components newly added for this submission, with approximate line counts, are:
 \begin{itemize}
@@ -100,7 +101,7 @@ The components newly added for this submission, with approximate line counts, ar
 \item the competition wrapper under \texttt{extra/maxsat\_evaluation/} ($\sim$340 lines);
 \item unit tests for the parser and an end-to-end test for the wrapper ($\sim$420 lines).
 \end{itemize}
-This new code, together with the corresponding build-system updates and the present description, was developed with the assistance of Claude Code \cite{claude-code} (Anthropic, invoked with the Claude Opus 4.7 model) used in a conversational pair-programming style. Every generated change was reviewed by the second author before being committed; the second author also directed the design, including the decision to keep the wrapper isolated under \texttt{extra/}, the WCNF-to-IP encoding scheme, and the error-handling protocol for the anytime tracks. The competition's regression test suite \cite{mse26} was used during development to validate parser correctness and the \texttt{s UNSATISFIABLE} exit path triggered by bound-propagation infeasibility.
+This new code, together with the corresponding build-system updates and the present description, was developed with the assistance of Claude Code \cite{claude-code} (Anthropic, invoked with the Claude Opus 4.7 model) used in a conversational pair-programming style. Every generated change was reviewed by the second author before being committed; the second author also directed the design, including the WCNF-to-IP encoding scheme, and the error-handling protocol for the anytime tracks. The competition's regression test suite \cite{mse26} was used during development to validate parser correctness and the \texttt{s UNSATISFIABLE} exit path triggered by bound-propagation infeasibility.
 
 The submitted Linux binary is built statically inside the project's Docker image (Ubuntu~22.04) and contains no proprietary or closed-source components.
 
