@@ -81,7 +81,8 @@ together with the penalty $w \cdot y^{-}$ added to the objective function.
 Because the unrelaxed left-hand side falls below the right-hand side by exactly one when the clause is falsified, $y^{-}$ acts as the indicator of clause falsification, and the total objective penalty equals the sum of weights of unsatisfied soft clauses.
 
 Soft-clause weights are read from the WCNF file as 64-bit unsigned integers and converted to double-precision floating-point coefficients in the objective penalty.
-Weight sums up to $2^{53}$ are represented exactly; beyond that, rounding may occur but does not affect feasibility of the underlying assignment.
+Weight sums up to $2^{53}$ are represented exactly; beyond that, rounding may occur in the double-typed objective.
+To avoid mis-reporting, the value printed on the \texttt{o}-line is therefore recomputed in 64-bit unsigned integer arithmetic from the original WCNF weights and the $y^{-}$ indicators of the incumbent assignment.
 
 \subsection{Anytime behavior}
 The MaxSAT Evaluation anytime tracks score solvers based on the quality of every reported intermediate solution \cite{mse26}.
