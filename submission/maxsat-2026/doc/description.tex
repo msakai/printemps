@@ -86,7 +86,6 @@ Weight sums up to $2^{53}$ are represented exactly; beyond that, rounding may oc
 \subsection{Anytime behavior}
 The MaxSAT Evaluation anytime tracks score solvers based on the quality of every reported intermediate solution \cite{mse26}.
 The wrapper subscribes to the per-iteration callback of PRINTEMPS' Tabu Search loop and emits a fresh \texttt{o}/\texttt{v} pair whenever the current feasible incumbent strictly improves over the previously reported one.
-Standard output is set to unit-buffered mode so that each line reaches the harness before the \texttt{SIGKILL} that follows \texttt{SIGTERM}.
 The tracks also mandate single-threaded execution; PRINTEMPS is therefore configured to use a single OpenMP thread.
 
 \section{Provenance}
