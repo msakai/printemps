@@ -96,12 +96,6 @@ class MaxSATEvaluationSolver {
         m_option.neighborhood.is_enabled_two_flip_move = true;
 
         /**
-         * Make stdout effectively unitbuf so that each o/v line reaches the
-         * parent before SIGKILL strikes.
-         */
-        std::cout << std::unitbuf;
-
-        /**
          * Parse the WCNF instance and import it into the IPModel.
          */
         m_wcnf.read_wcnf(m_argparser.wcnf_file_name);
@@ -153,8 +147,7 @@ class MaxSATEvaluationSolver {
         const long long COST = static_cast<long long>(
             std::llround(static_cast<double>(a_SOLUTION.objective)));
         std::cout << "o " << COST << "\n";
-        std::cout << "v " << v_line << "\n";
-        std::cout.flush();
+        std::cout << "v " << v_line << std::endl;
 
         m_have_emitted_solution = true;
     }
@@ -189,8 +182,7 @@ class MaxSATEvaluationSolver {
                 const long long COST =
                     static_cast<long long>(std::llround(FINAL_COST));
                 std::cout << "o " << COST << "\n";
-                std::cout << "v " << v_line << "\n";
-                std::cout.flush();
+                std::cout << "v " << v_line << std::endl;
                 m_have_emitted_solution = true;
             }
         }
